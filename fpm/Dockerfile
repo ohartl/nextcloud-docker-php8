@@ -1,5 +1,5 @@
 # DO NOT EDIT: created by update.sh from Dockerfile-debian.template
-FROM php:7.4-fpm-buster
+FROM php:8.0-fpm-buster
 
 # entrypoint.sh dependencies
 RUN set -ex; \
@@ -60,13 +60,11 @@ RUN set -ex; \
     pecl install APCu-5.1.20; \
     pecl install memcached-3.1.5; \
     pecl install redis-5.3.3; \
-    pecl install imagick-3.4.4; \
     \
     docker-php-ext-enable \
     apcu \
     memcached \
     redis \
-    imagick \
     ; \
     \
     # reset apt-mark's "manual" list so that "purge --auto-remove" will remove all build dependencies
@@ -82,6 +80,9 @@ RUN set -ex; \
     \
     apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false; \
     rm -rf /var/lib/apt/lists/*
+
+COPY --from=mlocati/php-extension-installer /usr/bin/install-php-extensions /usr/local/bin/
+RUN install-php-extensions imagick && rm /usr/local/bin/install-php-extensions
 
 # set recommended PHP.ini settings
 # see https://docs.nextcloud.com/server/stable/admin_manual/configuration_server/server_tuning.html#enable-php-opcache
