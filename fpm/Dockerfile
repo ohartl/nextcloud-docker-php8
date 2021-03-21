@@ -95,7 +95,8 @@ RUN { \
     echo 'opcache.interned_strings_buffer=256'; \
     echo 'opcache.max_accelerated_files=30000'; \
     echo 'opcache.validate_timestamps=0'; \
-    echo 'opcache.preload=/var/www/php80/var/cache/prod/App_KernelProdContainer.preload.php'; \
+    # currently unclear which nextcloud file to preload
+    #echo 'opcache.preload=/var/www/php80/var/cache/prod/App_KernelProdContainer.preload.php'; \
     echo 'opcache.jit_buffer_size=512mb'; \
     echo 'opcache.jit=1225'; \
     } > /usr/local/etc/php/conf.d/opcache-recommended.ini; \
