@@ -88,11 +88,16 @@ RUN install-php-extensions imagick && rm /usr/local/bin/install-php-extensions
 # see https://docs.nextcloud.com/server/stable/admin_manual/configuration_server/server_tuning.html#enable-php-opcache
 RUN { \
     echo 'opcache.enable=1'; \
-    echo 'opcache.interned_strings_buffer=8'; \
-    echo 'opcache.max_accelerated_files=10000'; \
-    echo 'opcache.memory_consumption=128'; \
     echo 'opcache.save_comments=1'; \
     echo 'opcache.revalidate_freq=1'; \
+    echo 'opcache.preload_user=www-data'; \
+    echo 'opcache.memory_consumption=1024'; \
+    echo 'opcache.interned_strings_buffer=256'; \
+    echo 'opcache.max_accelerated_files=30000'; \
+    echo 'opcache.validate_timestamps=0'; \
+    echo 'opcache.preload=/var/www/php80/var/cache/prod/App_KernelProdContainer.preload.php'; \
+    echo 'opcache.jit_buffer_size=512mb'; \
+    echo 'opcache.jit=1225'; \
     } > /usr/local/etc/php/conf.d/opcache-recommended.ini; \
     \
     echo 'apc.enable_cli=1' >> /usr/local/etc/php/conf.d/docker-php-ext-apcu.ini; \
