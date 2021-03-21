@@ -1,16 +1,13 @@
-name: Build and push Docker images
+name: Build and push Docker image
 
 env:
-  IMAGE_NAME: ohartl/nextcloud-fpm
+  IMAGE_NAME: ohartl/nextcloud-fpm-php8
 
 on:
   push:
     branches:
       - 'master'
 
-defaults:
-  run:
-    working-directory: fpm
 jobs:
   build:
     runs-on: ubuntu-20.04
