@@ -1,19 +1,16 @@
 # DO NOT EDIT: created by update.sh from Dockerfile-debian.template
 FROM php:7.4-fpm-buster
 
-# entrypoint.sh and cron.sh dependencies
+# entrypoint.sh dependencies
 RUN set -ex; \
     \
     apt-get update; \
     apt-get install -y --no-install-recommends \
-        rsync \
-        bzip2 \
-        busybox-static \
+    rsync \
+    bzip2 \
+    busybox-static \
     ; \
-    rm -rf /var/lib/apt/lists/*; \
-    \
-    mkdir -p /var/spool/cron/crontabs; \
-    echo '*/5 * * * * php -f /var/www/html/cron.php' > /var/spool/cron/crontabs/www-data
+    rm -rf /var/lib/apt/lists/*;
 
 # install the PHP extensions we need
 # see https://docs.nextcloud.com/server/stable/admin_manual/installation/source_installation.html
@@ -25,63 +22,63 @@ RUN set -ex; \
     \
     apt-get update; \
     apt-get install -y --no-install-recommends \
-        libcurl4-openssl-dev \
-        libevent-dev \
-        libfreetype6-dev \
-        libicu-dev \
-        libjpeg-dev \
-        libldap2-dev \
-        libmcrypt-dev \
-        libmemcached-dev \
-        libpng-dev \
-        libpq-dev \
-        libxml2-dev \
-        libmagickwand-dev \
-        libzip-dev \
-        libwebp-dev \
-        libgmp-dev \
+    libcurl4-openssl-dev \
+    libevent-dev \
+    libfreetype6-dev \
+    libicu-dev \
+    libjpeg-dev \
+    libldap2-dev \
+    libmcrypt-dev \
+    libmemcached-dev \
+    libpng-dev \
+    libpq-dev \
+    libxml2-dev \
+    libmagickwand-dev \
+    libzip-dev \
+    libwebp-dev \
+    libgmp-dev \
     ; \
     \
     debMultiarch="$(dpkg-architecture --query DEB_BUILD_MULTIARCH)"; \
     docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp; \
     docker-php-ext-configure ldap --with-libdir="lib/$debMultiarch"; \
     docker-php-ext-install -j "$(nproc)" \
-        bcmath \
-        exif \
-        gd \
-        intl \
-        ldap \
-        opcache \
-        pcntl \
-        pdo_mysql \
-        pdo_pgsql \
-        zip \
-        gmp \
+    bcmath \
+    exif \
+    gd \
+    intl \
+    ldap \
+    opcache \
+    pcntl \
+    pdo_mysql \
+    pdo_pgsql \
+    zip \
+    gmp \
     ; \
     \
-# pecl will claim success even if one install fails, so we need to perform each install separately
+    # pecl will claim success even if one install fails, so we need to perform each install separately
     pecl install APCu-5.1.20; \
     pecl install memcached-3.1.5; \
     pecl install redis-5.3.3; \
     pecl install imagick-3.4.4; \
     \
     docker-php-ext-enable \
-        apcu \
-        memcached \
-        redis \
-        imagick \
+    apcu \
+    memcached \
+    redis \
+    imagick \
     ; \
     \
-# reset apt-mark's "manual" list so that "purge --auto-remove" will remove all build dependencies
+    # reset apt-mark's "manual" list so that "purge --auto-remove" will remove all build dependencies
     apt-mark auto '.*' > /dev/null; \
     apt-mark manual $savedAptMark; \
     ldd "$(php -r 'echo ini_get("extension_dir");')"/*.so \
-        | awk '/=>/ { print $3 }' \
-        | sort -u \
-        | xargs -r dpkg-query -S \
-        | cut -d: -f1 \
-        | sort -u \
-        | xargs -rt apt-mark manual; \
+    | awk '/=>/ { print $3 }' \
+    | sort -u \
+    | xargs -r dpkg-query -S \
+    | cut -d: -f1 \
+    | sort -u \
+    | xargs -rt apt-mark manual; \
     \
     apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false; \
     rm -rf /var/lib/apt/lists/*
@@ -89,20 +86,20 @@ RUN set -ex; \
 # set recommended PHP.ini settings
 # see https://docs.nextcloud.com/server/stable/admin_manual/configuration_server/server_tuning.html#enable-php-opcache
 RUN { \
-        echo 'opcache.enable=1'; \
-        echo 'opcache.interned_strings_buffer=8'; \
-        echo 'opcache.max_accelerated_files=10000'; \
-        echo 'opcache.memory_consumption=128'; \
-        echo 'opcache.save_comments=1'; \
-        echo 'opcache.revalidate_freq=1'; \
+    echo 'opcache.enable=1'; \
+    echo 'opcache.interned_strings_buffer=8'; \
+    echo 'opcache.max_accelerated_files=10000'; \
+    echo 'opcache.memory_consumption=128'; \
+    echo 'opcache.save_comments=1'; \
+    echo 'opcache.revalidate_freq=1'; \
     } > /usr/local/etc/php/conf.d/opcache-recommended.ini; \
     \
     echo 'apc.enable_cli=1' >> /usr/local/etc/php/conf.d/docker-php-ext-apcu.ini; \
     \
     { \
-        echo 'memory_limit=${PHP_MEMORY_LIMIT}'; \
-        echo 'upload_max_filesize=${PHP_UPLOAD_LIMIT}'; \
-        echo 'post_max_size=${PHP_UPLOAD_LIMIT}'; \
+    echo 'memory_limit=${PHP_MEMORY_LIMIT}'; \
+    echo 'upload_max_filesize=${PHP_UPLOAD_LIMIT}'; \
+    echo 'post_max_size=${PHP_UPLOAD_LIMIT}'; \
     } > /usr/local/etc/php/conf.d/nextcloud.ini; \
     \
     mkdir /var/www/data; \
@@ -116,18 +113,18 @@ ENV NEXTCLOUD_VERSION 21.0.0
 
 RUN set -ex; \
     fetchDeps=" \
-        gnupg \
-        dirmngr \
+    gnupg \
+    dirmngr \
     "; \
     apt-get update; \
     apt-get install -y --no-install-recommends $fetchDeps; \
     \
     curl -fsSL -o nextcloud.tar.bz2 \
-        "https://download.nextcloud.com/server/releases/nextcloud-${NEXTCLOUD_VERSION}.tar.bz2"; \
+    "https://download.nextcloud.com/server/releases/nextcloud-${NEXTCLOUD_VERSION}.tar.bz2"; \
     curl -fsSL -o nextcloud.tar.bz2.asc \
-        "https://download.nextcloud.com/server/releases/nextcloud-${NEXTCLOUD_VERSION}.tar.bz2.asc"; \
+    "https://download.nextcloud.com/server/releases/nextcloud-${NEXTCLOUD_VERSION}.tar.bz2.asc"; \
     export GNUPGHOME="$(mktemp -d)"; \
-# gpg key from https://nextcloud.com/nextcloud.asc
+    # gpg key from https://nextcloud.com/nextcloud.asc
     gpg --batch --keyserver ha.pool.sks-keyservers.net --recv-keys 28806A878AE423A28372792ED75899B9A724937A; \
     gpg --batch --verify nextcloud.tar.bz2.asc nextcloud.tar.bz2; \
     tar -xjf nextcloud.tar.bz2 -C /usr/src/; \
